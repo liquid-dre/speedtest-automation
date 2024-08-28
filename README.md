@@ -63,7 +63,7 @@ Install the required Python packages using pip and the requirements.txt file:
 - Execute the script using Python:
 
     ```bash
-    python speedtest_script.py
+    python main.py
 
 - The script will:
 
