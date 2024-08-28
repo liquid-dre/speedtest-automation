@@ -2,6 +2,7 @@
 
 This project automates the process of running a network speed test, extracting results, and storing them in an MSSQL database. The script is implemented in Python using Selenium for browser automation, BeautifulSoup for parsing HTML, and pyodbc for database connectivity.
 
+------------------------------------------------------------------------------------------------------------
 
 ### **Summary of the README:**
 - **Project Title:** Provides the name and purpose of the project.
@@ -12,8 +13,7 @@ This project automates the process of running a network speed test, extracting r
 - **Contributing:** Invites others to contribute to the project.
 - **License:** Specifies the project’s licensing terms.
 
-This README file is ready to be added to your project, providing clear instructions and guidance for anyone who wants to use or contribute to your project.
-
+------------------------------------------------------------------------------------------------------------
 
 ## Prerequisites
 
