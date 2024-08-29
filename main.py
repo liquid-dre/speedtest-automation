@@ -7,13 +7,16 @@ from selenium.webdriver.chrome.options import Options
 import time
 import uuid
 from datetime import datetime
+from waitress import serve
 
 app = Flask(__name__)
+
 
 def log_message(message):
     print(f"[LOG] {message}")
 
-@app.route('/run-speedtest', methods=['GET'])
+
+@app.route("/run-speedtest", methods=["GET"])
 def run_speedtest():
     try:
         # Set up Selenium WebDriver
@@ -38,16 +41,32 @@ def run_speedtest():
 
         # Parse the page source using BeautifulSoup
         log_message("Parsing the page source...")
-        soup = BeautifulSoup(page_source, 'html.parser')
+        soup = BeautifulSoup(page_source, "html.parser")
 
-        download_speed = soup.find('symbol', {'id': 'downResultC1'}).find('text', {'class': 'rtextnum'}).text
-        upload_speed = soup.find('symbol', {'id': 'upResultC2'}).find('text', {'class': 'rtextnum'}).text
-        ping = soup.find('symbol', {'id': 'pingResultC3'}).find('text', {'class': 'rtextnum'}).text
-        jitter = soup.find('symbol', {'id': 'jitterResultC3'}).find('text', {'class': 'rtextnum'}).text
+        download_speed = (
+            soup.find("symbol", {"id": "downResultC1"})
+            .find("text", {"class": "rtextnum"})
+            .text
+        )
+        upload_speed = (
+            soup.find("symbol", {"id": "upResultC2"})
+            .find("text", {"class": "rtextnum"})
+            .text
+        )
+        ping = (
+            soup.find("symbol", {"id": "pingResultC3"})
+            .find("text", {"class": "rtextnum"})
+            .text
+        )
+        jitter = (
+            soup.find("symbol", {"id": "jitterResultC3"})
+            .find("text", {"class": "rtextnum"})
+            .text
+        )
 
         unique_id = str(uuid.uuid4())
-        process_date = datetime.now().strftime('%Y-%m-%d')
-        process_time = datetime.now().strftime('%H:%M:%S')
+        process_date = datetime.now().strftime("%Y-%m-%d")
+        process_time = datetime.now().strftime("%H:%M:%S")
 
         log_message(f"Generated Unique ID: {unique_id}")
         log_message(f"Process Date: {process_date}, Process Time: {process_time}")
@@ -60,18 +79,27 @@ def run_speedtest():
         try:
             log_message("Connecting to the MSSQL database...")
             conn = pyodbc.connect(
-                'DRIVER={ODBC Driver 17 for SQL Server};'
-                'SERVER=ZW-SQL\MSSQLSERVERSYB;'
-                'DATABASE=Nitro;'
-                'UID=sa;'
-                'PWD=Password01;'
+                "DRIVER={ODBC Driver 17 for SQL Server};"
+                "SERVER=ZW-SQL\MSSQLSERVERSYB;"
+                "DATABASE=Nitro;"
+                "UID=sa;"
+                "PWD=Password01;"
             )
             cursor = conn.cursor()
             log_message("Inserting data into the speedtest table...")
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO speedtest (id, download_speed, upload_speed, ping, jitter, processdate, processtime)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, unique_id, download_speed, upload_speed, ping, jitter, process_date, process_time)
+            """,
+                unique_id,
+                download_speed,
+                upload_speed,
+                ping,
+                jitter,
+                process_date,
+                process_time,
+            )
 
             conn.commit()
 
@@ -86,16 +114,18 @@ def run_speedtest():
                 conn.close()
             log_message("Database connection closed.")
 
-        return jsonify({
-            "status": "success",
-            "download_speed": download_speed,
-            "upload_speed": upload_speed,
-            "ping": ping,
-            "jitter": jitter,
-            "id": unique_id,
-            "process_date": process_date,
-            "process_time": process_time
-        })
+        return jsonify(
+            {
+                "status": "success",
+                "download_speed": download_speed,
+                "upload_speed": upload_speed,
+                "ping": ping,
+                "jitter": jitter,
+                "id": unique_id,
+                "process_date": process_date,
+                "process_time": process_time,
+            }
+        )
 
     except Exception as e:
         log_message(f"An error occurred: {e}")
@@ -107,5 +137,6 @@ def run_speedtest():
         except Exception as e:
             log_message(f"Error closing WebDriver: {e}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
